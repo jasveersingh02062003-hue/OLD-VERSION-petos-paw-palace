@@ -24,5 +24,5 @@ export const useHelpfulVetIds = () =>
 export const useIsHelpfulVet = (userId?: string | null) => {
   const { data } = useHelpfulVetIds();
   if (!userId) return false;
-  return data?.has(userId) ?? false;
+  return data instanceof Set ? data.has(userId) : Array.isArray(data) ? data.includes(userId) : false;
 };
