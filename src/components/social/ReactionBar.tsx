@@ -19,6 +19,12 @@ const REACTIONS: { kind: ReactionKind; emoji: string; label: string }[] = [
 
 type Counts = Partial<Record<ReactionKind, number>>;
 
+const asReactionSet = (value: unknown): Set<ReactionKind> => {
+  if (value instanceof Set) return value as Set<ReactionKind>;
+  if (Array.isArray(value)) return new Set(value as ReactionKind[]);
+  return new Set<ReactionKind>();
+};
+
 export const ReactionBar = ({
   postId,
   initialCounts,
@@ -43,6 +49,7 @@ export const ReactionBar = ({
       return new Set((data ?? []).map((r: any) => r.kind as ReactionKind));
     },
   });
+  const myReactions = asReactionSet(mine);
 
   const { data: counts } = useQuery({
     queryKey: ["post-reactions-counts", postId],
@@ -68,7 +75,7 @@ export const ReactionBar = ({
     if (!user) return toast.error("Please sign in");
     setOpen(false);
     haptic(10);
-    const has = mine?.has(kind);
+    const has = myReactions.has(kind);
     if (has) {
       await supabase.from("post_reactions").delete().eq("post_id", postId).eq("user_id", user.id).eq("kind", kind);
     } else {
@@ -78,7 +85,7 @@ export const ReactionBar = ({
 
   const total = Object.values(counts ?? {}).reduce((s: number, n: any) => s + (Number(n) || 0), 0);
   const top = REACTIONS.filter((r) => (counts?.[r.kind] ?? 0) > 0).slice(0, 3);
-  const myFirst = REACTIONS.find((r) => mine?.has(r.kind));
+  const myFirst = REACTIONS.find((r) => myReactions.has(r.kind));
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -133,7 +140,7 @@ export const ReactionBar = ({
       <PopoverContent side="top" align="start" className="p-1.5 rounded-full w-auto border-hairline">
         <div className="flex items-center gap-0.5">
           {REACTIONS.map((r) => {
-            const active = mine?.has(r.kind);
+            const active = myReactions.has(r.kind);
             return (
               <button
                 key={r.kind}
