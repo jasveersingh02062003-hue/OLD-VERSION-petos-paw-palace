@@ -17,7 +17,7 @@ import { toast } from "sonner";
  *  - mutations are NOT persisted (they replay on next session is dangerous).
  */
 
-const SCHEMA_REV = "v1";
+const SCHEMA_REV = "v2";
 const BUILD_ID = (import.meta.env.VITE_BUILD_ID as string | undefined) ?? "dev";
 export const PERSIST_BUSTER = `${SCHEMA_REV}:${BUILD_ID}`;
 const IDB_KEY = "rq-cache";
@@ -62,6 +62,12 @@ const NON_PERSISTED_PREFIXES = [
   // Sets / Maps don't survive JSON serialization — refetch on cold start.
   "verified-orgs",
   "pending-orgs",
+  "post-reactions-mine",
+  "helpful-vet-ids",
+  "wishlist-ids",
+  "blocked-ids",
+  "repeat-sellers",
+  "kdr-today-count",
 ];
 
 /** Hard size cap to keep IndexedDB sane. */
